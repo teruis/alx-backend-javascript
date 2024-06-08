@@ -1,25 +1,28 @@
 const fs = require('fs');
 
-function countStudents(path) {
+module.exports = function countStudents(file) {
   try {
-    const data = fs.readFileSync(path, 'utf8');
-    const result = [];
-    data.split('\n').forEach((data) => {
-      result.push(data.split(','));
+    const buf = fs.readFileSync(file, { encoding: 'utf-8' });
+    const data = buf.split('\r\n');
+    let total = 0;
+    const courses = {
+      CS: 'CS',
+      SWE: 'SWE',
+    };
+    const csStudents = [];
+    const sweStudents = [];
+    data.forEach((dt, idx) => {
+      if (idx !== 0 && dt !== '') {
+        const tmpData = dt.split(',');
+        // eslint-disable-next-line no-unused-expressions, max-len
+        tmpData[tmpData.length - 1] === courses.CS ? csStudents.push(tmpData[0]) : sweStudents.push(tmpData[0]);
+        total += 1;
+      }
     });
-    result.shift();
-    const newis = [];
-    result.forEach((data) => newis.push([data[0], data[3]]));
-    const fields = new Set();
-    newis.forEach((item) => fields.add(item[1]));
-    const final = {};
-    fields.forEach((data) => { (final[data] = 0); });
-    newis.forEach((data) => { (final[data[1]] += 1); });
-    console.log(`Number of students: ${result.filter((check) => check.length > 3).length}`);
-    Object.keys(final).forEach((data) => console.log(`Number of students in ${data}: ${final[data]}. List: ${newis.filter((n) => n[1] === data).map((n) => n[0]).join(', ')}`));
-  } catch (E) {
-    throw Error('Cannot load the database');
+    console.log(`Number of students: ${total}`);
+    console.log(`Number of students in CS: ${csStudents.length}. List: ${csStudents.join(', ')}`);
+    console.log(`Number of students in SWE: ${sweStudents.length}. List: ${sweStudents.join(', ')}`);
+  } catch (error) {
+    throw new Error('Cannot load the database');
   }
-}
-
-module.exports = countStudents;
+};
